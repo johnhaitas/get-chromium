@@ -2,34 +2,29 @@
 
 set -e
 
-# Identify which command we need to download
-if which wget &> /dev/null; then
-	DLOAD_CMD="wget"
-elif which curl &> /dev/null; then
-	DLOAD_CMD="curl -O"
-else
-	echo "don't know how to download"
-	exit
-fi
+ROOT_URL="http://commondatastorage.googleapis.com/chromium-browser-snapshots"
 
 case `uname` in
 	'Darwin' )
-		${DLOAD_CMD} `./latestChromiumURL.py`
-	
+		OS_URL="${ROOT_URL}/Mac"
+		FILE_NAME="chrome-mac.zip"
+		LAST_CHANGE=$(curl ${OS_URL}/LAST_CHANGE)
+		curl -O ${OS_URL}/${LAST_CHANGE}/${FILE_NAME}
 
-		unzip -q chrome-mac.zip 
-
-		cd chrome-mac
-		rm -rf ~/Applications/Chromium.app
-		mv Chromium.app/ ~/Applications/Chromium.app
-		cd ..
-
-		rm -rf chrome-mac
+		unzip -q ${FILE_NAME}
+		mkdir -p ${HOME}/Applications
+		mv chrome-mac/Chromium.app ${HOME}/Applications/Chromium.app
+		rm -rf ${FILE_NAME} chrome-mac
 		;;
+
 	'Linux' )
-		${DLOAD_CMD} `./latestChromiumURL.py`
-		unzip -q chrome-linux.zip
-		rm -rf chrome-linux.zip
+		OS_URL="${ROOT_URL}/Linux"
+		FILE_NAME="chrome-linux.zip"
+		LAST_CHANGE=$(curl ${OS_URL}/LAST_CHANGE)
+		curl -O ${OS_URL}/${LAST_CHANGE}/${FILE_NAME}
+
+		unzip -q ${FILE_NAME}
+		rm -rf ${FILE_NAME}
 		;;
 esac
 
